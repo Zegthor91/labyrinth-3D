@@ -1,63 +1,44 @@
 import * as THREE from 'three'
 
 /**
- * Labyrinth - Gère la création et le rendu du labyrinthe
- * Chaque cellule = 1 unité. Les murs font 1 unité d'épaisseur et WALL_HEIGHT de hauteur.
+ * Labyrinth - Construit et gère le labyrinthe 3D.
  *
- * Carte du labyrinthe :
- *   1 = mur
- *   0 = couloir
- *   S = départ du joueur
- *   E = sortie
+ * Convention de la map :
+ *   1   = mur
+ *   0   = couloir
+ *  'S'  = départ du joueur
+ *  'E'  = sortie
  */
 export class Labyrinth {
-  // Dimensions d'une cellule
-  static CELL_SIZE = 4
-  static WALL_HEIGHT = 3
-  static WALL_THICKNESS = 0.4
+  static CELL_SIZE    = 4
+  static WALL_HEIGHT  = 3
 
-  // Carte du labyrinthe (0=couloir, 1=mur, S=start, E=exit)
-  static MAP = [
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 'S',0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
-    [1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1],
-    [1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1],
-    [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1],
-    [1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1],
-    [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1],
-    [1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1],
-    [1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0,'E',1],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-  ]
-
-  constructor(scene, wallMaterial, floorMaterial) {
-    this.scene = scene
-    this.wallMaterial = wallMaterial
+  /**
+   * @param {THREE.Scene} scene
+   * @param {THREE.Material} wallMaterial
+   * @param {THREE.Material} floorMaterial
+   * @param {Array}  mapData  - grille 2D définissant le labyrinthe
+   */
+  constructor(scene, wallMaterial, floorMaterial, mapData) {
+    this.scene         = scene
+    this.wallMaterial  = wallMaterial
     this.floorMaterial = floorMaterial
+    this.map           = mapData
 
-    // Boîtes de collision des murs (liste de THREE.Box3)
-    this.wallBoxes = []
-
-    // Position de départ et de sortie
+    this.wallBoxes     = []          // Box3 pour les collisions
     this.startPosition = new THREE.Vector3()
-    this.exitPosition = new THREE.Vector3()
-
-    // Mesh de la sortie (pour la détecter)
-    this.exitMesh = null
+    this.exitPosition  = new THREE.Vector3()
+    this._meshes       = []          // tous les meshes créés, pour dispose()
 
     this._build()
   }
 
-  /**
-   * Convertit une coordonnée de grille en coordonnée monde
-   */
+  // ─── Conversion grille → monde ───────────────────────────────────────────
+
   _gridToWorld(col, row) {
-    const C = Labyrinth.CELL_SIZE
-    const cols = Labyrinth.MAP[0].length
-    const rows = Labyrinth.MAP.length
+    const C    = Labyrinth.CELL_SIZE
+    const cols = this.map[0].length
+    const rows = this.map.length
     return new THREE.Vector3(
       (col - cols / 2) * C,
       0,
@@ -65,78 +46,70 @@ export class Labyrinth {
     )
   }
 
-  /**
-   * Construit la géométrie du labyrinthe (sol + murs)
-   */
+  // ─── Construction ────────────────────────────────────────────────────────
+
   _build() {
-    const map = Labyrinth.MAP
+    const map  = this.map
     const rows = map.length
     const cols = map[0].length
-    const C = Labyrinth.CELL_SIZE
-    const H = Labyrinth.WALL_HEIGHT
+    const C    = Labyrinth.CELL_SIZE
+    const H    = Labyrinth.WALL_HEIGHT
 
-    // --- Sol global ---
-    const floorGeo = new THREE.PlaneGeometry(cols * C, rows * C)
-    const floor = new THREE.Mesh(floorGeo, this.floorMaterial)
+    // Sol
+    const floor = new THREE.Mesh(
+      new THREE.PlaneGeometry(cols * C, rows * C),
+      this.floorMaterial
+    )
     floor.rotation.x = -Math.PI / 2
     floor.receiveShadow = true
     this.scene.add(floor)
+    this._meshes.push(floor)
 
-    // --- Plafond (optionnel, aide à l'immersion) ---
-    const ceilGeo = new THREE.PlaneGeometry(cols * C, rows * C)
+    // Plafond
     const ceilMat = new THREE.MeshStandardMaterial({ color: 0x222222, side: THREE.BackSide })
-    const ceil = new THREE.Mesh(ceilGeo, ceilMat)
+    const ceil = new THREE.Mesh(
+      new THREE.PlaneGeometry(cols * C, rows * C),
+      ceilMat
+    )
     ceil.rotation.x = Math.PI / 2
     ceil.position.y = H
     this.scene.add(ceil)
+    this._meshes.push(ceil)
 
-    // --- Murs ---
+    // Murs, départ, sortie
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < cols; col++) {
         const cell = map[row][col]
-
-        if (cell === 1) {
-          this._createWall(col, row)
-        } else if (cell === 'S') {
-          const pos = this._gridToWorld(col, row)
-          this.startPosition.set(pos.x, 1.7, pos.z) // hauteur yeux
-        } else if (cell === 'E') {
-          const pos = this._gridToWorld(col, row)
-          this.exitPosition.copy(pos)
-          this._createExit(col, row)
-        }
+        if      (cell === 1)   this._createWall(col, row)
+        else if (cell === 'S') this._initStart(col, row)
+        else if (cell === 'E') this._createExit(col, row)
       }
     }
   }
 
-  /**
-   * Crée un mur à la position grille (col, row)
-   */
   _createWall(col, row) {
     const C = Labyrinth.CELL_SIZE
     const H = Labyrinth.WALL_HEIGHT
-
-    const geo = new THREE.BoxGeometry(C, H, C)
-    const wall = new THREE.Mesh(geo, this.wallMaterial)
-
+    const wall = new THREE.Mesh(
+      new THREE.BoxGeometry(C, H, C),
+      this.wallMaterial
+    )
     const pos = this._gridToWorld(col, row)
     wall.position.set(pos.x, H / 2, pos.z)
-    wall.castShadow = true
+    wall.castShadow    = true
     wall.receiveShadow = true
-
     this.scene.add(wall)
-
-    // Boîte de collision légèrement réduite
-    const box = new THREE.Box3().setFromObject(wall)
-    this.wallBoxes.push(box)
+    this._meshes.push(wall)
+    this.wallBoxes.push(new THREE.Box3().setFromObject(wall))
   }
 
-  /**
-   * Crée le marqueur de sortie (plan vert lumineux au sol)
-   */
+  _initStart(col, row) {
+    const pos = this._gridToWorld(col, row)
+    this.startPosition.set(pos.x, 1.7, pos.z) // hauteur des yeux
+  }
+
   _createExit(col, row) {
-    const C = Labyrinth.CELL_SIZE
-    const geo = new THREE.PlaneGeometry(C * 0.9, C * 0.9)
+    const C   = Labyrinth.CELL_SIZE
     const mat = new THREE.MeshStandardMaterial({
       color: 0x00ff88,
       emissive: 0x00ff88,
@@ -144,39 +117,45 @@ export class Labyrinth {
       transparent: true,
       opacity: 0.85,
     })
-    const exit = new THREE.Mesh(geo, mat)
+    const exit = new THREE.Mesh(new THREE.PlaneGeometry(C * 0.9, C * 0.9), mat)
     exit.rotation.x = -Math.PI / 2
     const pos = this._gridToWorld(col, row)
     exit.position.set(pos.x, 0.05, pos.z)
     this.scene.add(exit)
-    this.exitMesh = exit
+    this._meshes.push(exit)
+    this.exitPosition.copy(pos)
   }
 
-  /**
-   * Vérifie si une sphère (position + rayon) entre en collision avec un mur.
-   * Retourne le vecteur de correction à appliquer, ou null si pas de collision.
-   */
+  // ─── Collision ───────────────────────────────────────────────────────────
+
   checkCollision(position, radius) {
     const playerBox = new THREE.Box3(
       new THREE.Vector3(position.x - radius, position.y - 1.5, position.z - radius),
       new THREE.Vector3(position.x + radius, position.y + 0.5, position.z + radius)
     )
-
     for (const wallBox of this.wallBoxes) {
-      if (playerBox.intersectsBox(wallBox)) {
-        return true
-      }
+      if (playerBox.intersectsBox(wallBox)) return true
     }
     return false
   }
 
-  /**
-   * Vérifie si le joueur a atteint la sortie
-   */
+  // ─── Détection sortie ────────────────────────────────────────────────────
+
   isAtExit(position) {
-    const C = Labyrinth.CELL_SIZE
+    const C  = Labyrinth.CELL_SIZE
     const dx = Math.abs(position.x - this.exitPosition.x)
     const dz = Math.abs(position.z - this.exitPosition.z)
     return dx < C * 0.6 && dz < C * 0.6
+  }
+
+  // ─── Nettoyage scène ─────────────────────────────────────────────────────
+
+  dispose() {
+    for (const mesh of this._meshes) {
+      this.scene.remove(mesh)
+      mesh.geometry.dispose()
+    }
+    this._meshes   = []
+    this.wallBoxes = []
   }
 }
