@@ -7,327 +7,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-    <style>
-      :root {
-        --accent:     #00ffe7;
-        --accent-dim: rgba(0, 255, 231, 0.08);
-        --bg:         #060a0e;
-      }
-
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
-      body {
-        background: var(--bg);
-        overflow: hidden;
-        font-family: 'Rajdhani', sans-serif;
-      }
-
-      canvas { display: block; }
-
-      /* ─── CHRONO ─── */
-      #timer {
-        position: fixed;
-        top: 28px;
-        left: 50%;
-        transform: translateX(-50%);
-        font-family: 'Share Tech Mono', monospace;
-        font-size: 30px;
-        letter-spacing: 6px;
-        color: #fff;
-        text-shadow: 0 0 12px var(--accent), 0 0 30px rgba(0,255,231,0.3);
-        display: none;
-        user-select: none;
-        pointer-events: none;
-      }
-
-      /* ─── VISEUR ─── */
-      #crosshair {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 18px;
-        height: 18px;
-        display: none;
-        pointer-events: none;
-      }
-
-      #crosshair::before,
-      #crosshair::after {
-        content: '';
-        position: absolute;
-        background: rgba(255,255,255,0.6);
-        border-radius: 1px;
-      }
-
-      #crosshair::before {
-        width: 1px;
-        height: 100%;
-        left: 50%;
-        transform: translateX(-50%);
-      }
-
-      #crosshair::after {
-        width: 100%;
-        height: 1px;
-        top: 50%;
-        transform: translateY(-50%);
-      }
-
-      /* ─── BASE ÉCRANS ─── */
-      .screen {
-        position: fixed;
-        inset: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 100;
-      }
-
-      /* ─── FOND COMMUN AVEC GRILLE ─── */
-      .screen::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background-color: #060a0e;
-        background-image:
-          linear-gradient(rgba(0,255,231,0.04) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(0,255,231,0.04) 1px, transparent 1px);
-        background-size: 48px 48px;
-        z-index: -1;
-      }
-
-      /* Vignette sur les bords */
-      .screen::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: radial-gradient(ellipse at center, transparent 40%, #060a0e 100%);
-        z-index: -1;
-        pointer-events: none;
-      }
-
-      /* ─── ÉCRAN DÉMARRAGE ─── */
-      #start-screen {
-        gap: 0;
-      }
-
-      .tag {
-        font-family: 'Share Tech Mono', monospace;
-        font-size: 11px;
-        letter-spacing: 4px;
-        color: var(--accent);
-        margin-bottom: 16px;
-        opacity: 0.7;
-      }
-
-      .logo {
-        font-size: 72px;
-        font-weight: 700;
-        letter-spacing: 14px;
-        text-transform: uppercase;
-        color: #fff;
-        line-height: 1;
-        margin-bottom: 6px;
-        /* Contour néon */
-        text-shadow:
-          0 0 20px rgba(0,255,231,0.5),
-          0 0 60px rgba(0,255,231,0.2);
-      }
-
-      .logo span {
-        color: var(--accent);
-      }
-
-      .subtitle {
-        font-family: 'Share Tech Mono', monospace;
-        font-size: 12px;
-        letter-spacing: 6px;
-        color: rgba(255,255,255,0.25);
-        text-transform: uppercase;
-        margin-bottom: 52px;
-      }
-
-      /* Séparateur lumineux */
-      .sep {
-        width: 1px;
-        height: 40px;
-        background: linear-gradient(to bottom, transparent, var(--accent), transparent);
-        margin-bottom: 40px;
-        opacity: 0.5;
-      }
-
-      /* Grille de contrôles */
-      .controls {
-        display: grid;
-        grid-template-columns: 110px 1fr;
-        gap: 12px 24px;
-        margin-bottom: 52px;
-      }
-
-      .key {
-        font-family: 'Share Tech Mono', monospace;
-        font-size: 12px;
-        letter-spacing: 2px;
-        color: var(--accent);
-        background: var(--accent-dim);
-        border: 1px solid rgba(0,255,231,0.25);
-        border-radius: 3px;
-        padding: 5px 10px;
-        text-align: center;
-      }
-
-      .key-desc {
-        font-size: 14px;
-        font-weight: 600;
-        letter-spacing: 2px;
-        color: rgba(255,255,255,0.45);
-        display: flex;
-        align-items: center;
-        text-transform: uppercase;
-      }
-
-      /* Bouton Jouer */
-      .btn-play {
-        position: relative;
-        padding: 14px 60px;
-        font-family: 'Rajdhani', sans-serif;
-        font-size: 17px;
-        font-weight: 700;
-        letter-spacing: 6px;
-        text-transform: uppercase;
-        color: var(--bg);
-        background: var(--accent);
-        border: none;
-        border-radius: 2px;
-        cursor: pointer;
-        transition: box-shadow 0.2s, transform 0.1s;
-        box-shadow: 0 0 20px rgba(0,255,231,0.4), 0 0 40px rgba(0,255,231,0.15);
-      }
-
-      .btn-play:hover {
-        box-shadow: 0 0 30px rgba(0,255,231,0.7), 0 0 60px rgba(0,255,231,0.3);
-        transform: translateY(-2px);
-      }
-
-      .btn-play:active {
-        transform: translateY(0);
-      }
-
-      /* ─── SÉLECTION DIFFICULTÉ ─── */
-      .difficulty-label {
-        font-family: 'Share Tech Mono', monospace;
-        font-size: 11px;
-        letter-spacing: 4px;
-        color: rgba(255,255,255,0.35);
-        text-transform: uppercase;
-        margin-bottom: 14px;
-      }
-
-      .difficulty-btns {
-        display: flex;
-        gap: 12px;
-        margin-bottom: 36px;
-      }
-
-      .level-btn {
-        padding: 9px 24px;
-        font-family: 'Rajdhani', sans-serif;
-        font-size: 14px;
-        font-weight: 700;
-        letter-spacing: 4px;
-        text-transform: uppercase;
-        color: rgba(255,255,255,0.45);
-        background: transparent;
-        border: 1px solid rgba(255,255,255,0.15);
-        border-radius: 2px;
-        cursor: pointer;
-        transition: border-color 0.2s, color 0.2s;
-      }
-
-      .level-btn:hover {
-        border-color: rgba(0,255,231,0.5);
-        color: rgba(0,255,231,0.8);
-      }
-
-      .level-btn.active {
-        color: var(--accent);
-        border-color: var(--accent);
-        background: rgba(0,255,231,0.08);
-        box-shadow: 0 0 10px rgba(0,255,231,0.2);
-      }
-
-      /* ─── ÉCRAN FIN ─── */
-      #end-screen {
-        display: none;
-        gap: 0;
-      }
-
-      .result-tag {
-        font-family: 'Share Tech Mono', monospace;
-        font-size: 11px;
-        letter-spacing: 5px;
-        color: var(--accent);
-        margin-bottom: 12px;
-        opacity: 0.8;
-      }
-
-      .win-title {
-        font-size: 80px;
-        font-weight: 700;
-        letter-spacing: 10px;
-        text-transform: uppercase;
-        color: #fff;
-        line-height: 1;
-        margin-bottom: 8px;
-        text-shadow: 0 0 30px rgba(0,255,231,0.4);
-      }
-
-      #final-time {
-        font-family: 'Share Tech Mono', monospace;
-        font-size: 48px;
-        letter-spacing: 8px;
-        color: var(--accent);
-        text-shadow: 0 0 20px rgba(0,255,231,0.6), 0 0 50px rgba(0,255,231,0.2);
-        margin-bottom: 52px;
-      }
-
-      .btn-retry {
-        padding: 14px 60px;
-        font-family: 'Rajdhani', sans-serif;
-        font-size: 17px;
-        font-weight: 700;
-        letter-spacing: 6px;
-        text-transform: uppercase;
-        color: #fff;
-        background: transparent;
-        border: 1px solid rgba(255,255,255,0.3);
-        border-radius: 2px;
-        cursor: pointer;
-        transition: border-color 0.2s, color 0.2s, transform 0.1s;
-      }
-
-      .btn-retry:hover {
-        border-color: var(--accent);
-        color: var(--accent);
-        transform: translateY(-2px);
-      }
-
-      .btn-retry:active {
-        transform: translateY(0);
-      }
-    </style>
+    <link rel="stylesheet" href="/style.css">
   </head>
   <body>
 
     <!-- Écran de démarrage -->
     <div id="start-screen" class="screen">
-      <div class="tag">// ESCAPE THE MAZE</div>
       <div class="logo">LAB<span>Y</span>RINTH</div>
       <div class="subtitle">3D &nbsp;·&nbsp; FIRST PERSON</div>
       <div class="sep"></div>
@@ -339,7 +24,7 @@
         <span class="key">ESC</span>
         <span class="key-desc">Pause</span>
       </div>
-      <div class="difficulty-label">// Difficulté</div>
+      <div class="difficulty-label">Difficulté</div>
       <div class="difficulty-btns">
         <button class="level-btn" data-level="easy">Facile</button>
         <button class="level-btn" data-level="normal">Normal</button>
@@ -348,9 +33,19 @@
       <button id="btn-start" class="btn-play">Jouer</button>
     </div>
 
+    <!-- Écran de pause -->
+    <div id="pause-screen" class="screen" style="display:none">
+      <div class="logo">PAUSE</div>
+      <div class="sep"></div>
+      <div class="pause-btns">
+        <button id="btn-resume"  class="btn-play">Reprendre</button>
+        <button id="btn-restart-pause" class="btn-retry">Rejouer</button>
+        <button id="btn-menu"    class="btn-retry">Retour au menu</button>
+      </div>
+    </div>
+
     <!-- Écran de fin -->
     <div id="end-screen" class="screen">
-      <div class="result-tag">// SORTIE TROUVÉE</div>
       <div class="win-title">Bravo</div>
       <div id="final-time">00:00</div>
       <button id="btn-restart" class="btn-retry">Rejouer</button>
