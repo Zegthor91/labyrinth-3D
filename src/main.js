@@ -71,7 +71,6 @@ let labyrinth = null
 function buildLabyrinth() {
   if (labyrinth) labyrinth.dispose()
   labyrinth = new Labyrinth(scene, wallMaterial, floorMaterial, LEVELS[selectedLevel].map)
-  if (player) player.labyrinth = labyrinth
 }
 
 // ─────────────────────────────────────────────
@@ -123,6 +122,7 @@ function startGame() {
 
   // Reconstruction du labyrinthe selon le niveau choisi
   buildLabyrinth()
+  player.labyrinth = labyrinth
   player.reset(labyrinth.startPosition)
 
   crosshairEl.style.display = 'block'

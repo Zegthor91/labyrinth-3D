@@ -4,7 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Labyrinth 3D</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
+      :root {
+        --accent:     #00ffe7;
+        --accent-dim: rgba(0, 255, 231, 0.08);
+        --bg:         #060a0e;
+      }
+
       * {
         margin: 0;
         padding: 0;
@@ -210,6 +219,49 @@
         transform: translateY(0);
       }
 
+      /* ─── SÉLECTION DIFFICULTÉ ─── */
+      .difficulty-label {
+        font-family: 'Share Tech Mono', monospace;
+        font-size: 11px;
+        letter-spacing: 4px;
+        color: rgba(255,255,255,0.35);
+        text-transform: uppercase;
+        margin-bottom: 14px;
+      }
+
+      .difficulty-btns {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 36px;
+      }
+
+      .level-btn {
+        padding: 9px 24px;
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.45);
+        background: transparent;
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 2px;
+        cursor: pointer;
+        transition: border-color 0.2s, color 0.2s;
+      }
+
+      .level-btn:hover {
+        border-color: rgba(0,255,231,0.5);
+        color: rgba(0,255,231,0.8);
+      }
+
+      .level-btn.active {
+        color: var(--accent);
+        border-color: var(--accent);
+        background: rgba(0,255,231,0.08);
+        box-shadow: 0 0 10px rgba(0,255,231,0.2);
+      }
+
       /* ─── ÉCRAN FIN ─── */
       #end-screen {
         display: none;
@@ -286,6 +338,12 @@
         <span class="key-desc">Regarder</span>
         <span class="key">ESC</span>
         <span class="key-desc">Pause</span>
+      </div>
+      <div class="difficulty-label">// Difficulté</div>
+      <div class="difficulty-btns">
+        <button class="level-btn" data-level="easy">Facile</button>
+        <button class="level-btn" data-level="normal">Normal</button>
+        <button class="level-btn" data-level="hard">Difficile</button>
       </div>
       <button id="btn-start" class="btn-play">Jouer</button>
     </div>
