@@ -1,14 +1,14 @@
 /**
- * Définition des 3 différentes maps du jeu :
+ * Chaque map est un tableau 2D où chaque valeur représente une case :
  *
- * 1 = mur
- * 0 = couloir / espace vide
- * 'S'= point de départ du joueur
- * 'E'= point de sortie / fin du jeu
+ *   1   → mur (génère un mur rectangulaire en 3D)
+ *   0   → couloir vide (espace vide où le joueur peut circuler)
+ *  'S'  → point de départ (comme un couloir, point de spawn du joueur)
+ *  'E'  → sortie (marqueur lumineux au sol indiquant la sorti du labyrinth)
  *
  */
 
-// ─── FACILE (11×11) ──────────────────────────────────────────────────────────
+// MODE FACILE (11×11)
 export const MAP_EASY = [
   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
   [1,'S', 0, 0, 0, 1, 0, 0, 0, 0, 1],
@@ -23,7 +23,7 @@ export const MAP_EASY = [
   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 ]
 
-// ─── NORMAL (15×15) ──────────────────────────────────────────────────────────
+// MODE NORMAL (15×15)
 export const MAP_NORMAL = [
   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
   [1, 0, 'S', 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
@@ -42,10 +42,7 @@ export const MAP_NORMAL = [
   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 ]
 
-// ─── DIFFICILE (19×19) ───────────────────────────────────────────────────────
-// Structure "Snake" : 4 grands couloirs (rows 1,6,11,16) reliés en serpentin.
-// De vrais faux chemins (2-4 cases) bifurquent depuis chaque couloir.
-// Chemin garanti : S(1,1)→col17→col1→col17→col1→E(16,1).
+// DIFFICILE (19×19)
 export const MAP_HARD = [
   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
   [1,'S', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
@@ -70,6 +67,6 @@ export const MAP_HARD = [
 
 export const LEVELS = {
   easy:   { map: MAP_EASY,   label: 'Facile',    size: '11×11' },
-  normal: { map: MAP_NORMAL, label: 'Normal',    size: '15×15' },
-  hard:   { map: MAP_HARD,   label: 'Difficile', size: '19×19' },
+  normal: { map: MAP_NORMAL, label: 'Normal',     size: '15×15' },
+  hard:   { map: MAP_HARD,   label: 'Difficile',  size: '19×19' },
 }

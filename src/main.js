@@ -1,23 +1,23 @@
 import * as THREE from 'three'
 import { scene, camera, renderer, wallMaterial, floorMaterial } from './scene.js'
 import { Labyrinth } from './game/Labyrinth.js'
-import { Player }    from './game/Player.js'
-import { Timer }     from './game/Timer.js'
-import { LEVELS }    from './game/maps.js'
+import { Player } from './game/Player.js'
+import { Timer } from './game/Timer.js'
+import { LEVELS } from './game/maps.js'
 import { ui, getSelectedLevel, showGame, showPause, hidePause, showEnd, showStart } from './ui.js'
 
-// ── Initialisation ────────────────────────────────────────────────────────────
+// ── Initialisation
 let labyrinth = new Labyrinth(scene, wallMaterial, floorMaterial, LEVELS.normal.map)
-const player  = new Player(camera, renderer.domElement, labyrinth)
-const timer   = new Timer(document.getElementById('timer'))
+const player = new Player(camera, renderer.domElement, labyrinth)
+const timer = new Timer(document.getElementById('timer'))
 
-// ── État du jeu ───────────────────────────────────────────────────────────────
-let state = 'start'   // 'start' | 'playing' | 'paused' | 'end'
+// ── État du jeu
+let state = 'start'
 
-// ── Logique de jeu ────────────────────────────────────────────────────────────
+// Logique de jeu
 function startGame() {
   labyrinth.dispose()
-  labyrinth        = new Labyrinth(scene, wallMaterial, floorMaterial, LEVELS[getSelectedLevel()].map)
+  labyrinth = new Labyrinth(scene, wallMaterial, floorMaterial, LEVELS[getSelectedLevel()].map)
   player.labyrinth = labyrinth
   player.reset(labyrinth.startPosition)
 
@@ -47,7 +47,7 @@ function endGame() {
   showEnd(Timer.format(timer.stop()))
 }
 
-// ── Déclenchement de la pause (ESC ou Espace) ────────────────────────────────
+// Déclenchement de la pause, avec touche espace
 player.controls.addEventListener('unlock', () => {
   if (state === 'playing') pauseGame()
 })
@@ -55,11 +55,11 @@ player.controls.addEventListener('unlock', () => {
 window.addEventListener('keydown', (e) => {
   if (e.code !== 'Space') return
   e.preventDefault()
-  if (state === 'playing') player.unlock()       // déclenche l'event 'unlock' → pauseGame()
+  if (state === 'playing') player.unlock() // déclenche l'event 'unlock' → pauseGame()
   else if (state === 'paused') resumeGame()
 })
 
-// ── Écouteurs UI ──────────────────────────────────────────────────────────────
+// Écouteurs UI
 ui.btnStart.addEventListener('click', startGame)
 
 ui.btnResume.addEventListener('click', resumeGame)
@@ -75,7 +75,7 @@ ui.btnRestart.addEventListener('click', () => {
   state = 'start'
 })
 
-// ── Boucle de rendu ───────────────────────────────────────────────────────────
+// Boucle de rendu
 const clock = new THREE.Clock()
 
 function animate() {

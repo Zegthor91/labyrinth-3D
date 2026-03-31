@@ -2,17 +2,17 @@ import * as THREE from 'three'
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js'
 
 /**
- * Player - Gère le joueur, ses déplacements et le PointerLockControls (vue 1ère personne)
+ * Classe joueur : gestion des déplacements et de la caméra (à la 1ère personne)
  */
 export class Player {
-  static SPEED = 8          // unités/seconde
-  static RADIUS = 0.6       // rayon de collision
+  static SPEED = 8    // unités/seconde
+  static RADIUS = 0.6   // rayon collision
 
   constructor(camera, domElement, labyrinth) {
     this.camera = camera
     this.labyrinth = labyrinth
 
-    // PointerLockControls pour la vue FPS (depuis le cours)
+    // Camera pour la vue FPS
     this.controls = new PointerLockControls(camera, domElement)
 
     // Touches pressées
@@ -23,7 +23,7 @@ export class Player {
       right: false,
     }
 
-    // Vecteur de direction de mouvement (réutilisé à chaque frame)
+    // Vecteur de direction de mouvement
     this._direction = new THREE.Vector3()
     this._velocity = new THREE.Vector3()
 
@@ -31,18 +31,22 @@ export class Player {
   }
 
   /**
-   * Positionne le joueur au point de départ du labyrinthe
+   * Point de départ du joueur
    */
   reset(startPosition) {
     this.camera.position.copy(startPosition)
   }
 
   /**
-   * Active/désactive le PointerLock (capture de la souris)
+   * Active la capture de la souris
    */
   lock() {
     this.controls.lock()
   }
+
+  /**
+   * /désactive la capture de la souris
+   */
 
   unlock() {
     this.controls.unlock()
@@ -54,7 +58,7 @@ export class Player {
 
   /**
    * Met à jour la position du joueur en tenant compte des collisions
-   * @param {number} delta - temps écoulé depuis la dernière frame (en secondes)
+   * @param {number} delta
    */
   update(delta) {
     if (!this.controls.isLocked) return
@@ -73,7 +77,7 @@ export class Player {
 
     const pos = this.camera.position
 
-    // Déplacement axe Z (avant/arrière) avec gestion de collision
+    // Déplacement de l'axe Z (avant & arrière) avec gestion des collisions
     if (this._direction.z !== 0) {
       this.controls.moveForward(this._direction.z * speed)
       if (this.labyrinth.checkCollision(pos, Player.RADIUS)) {
@@ -81,7 +85,7 @@ export class Player {
       }
     }
 
-    // Déplacement axe X (gauche/droite) avec gestion de collision
+    // Déplacement de l'axe X (gauche & droite) avec gestion des collisions
     if (this._direction.x !== 0) {
       this.controls.moveRight(this._direction.x * speed)
       if (this.labyrinth.checkCollision(pos, Player.RADIUS)) {
@@ -89,12 +93,12 @@ export class Player {
       }
     }
 
-    // On force la hauteur des yeux (pas de gravité / saut dans ce projet)
+    // Stabilisation du point d'origine, toujours à 0 sur l'axe y
     pos.y = this.labyrinth.startPosition.y
   }
 
   /**
-   * Écoute les touches clavier (ZQSD + flèches)
+   * Setup pour les touches au clavier
    */
   _setupKeyListeners() {
     const onKeyDown = (e) => {

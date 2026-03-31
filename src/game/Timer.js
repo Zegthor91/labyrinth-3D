@@ -1,5 +1,5 @@
 /**
- * Timer - Gère le chronomètre du jeu
+ * Timer : Le chronomètre du jeu
  */
 export class Timer {
   constructor(displayElement) {
@@ -9,7 +9,7 @@ export class Timer {
     this._running = false
   }
 
-  /** Démarre le chronomètre */
+  /** Démarrage du chronomètre */
   start() {
     this._startTime = performance.now()
     this._elapsed = 0
@@ -56,7 +56,7 @@ export class Timer {
     return this._elapsed
   }
 
-  /** Met à jour l'affichage (à appeler dans la boucle de rendu) */
+  /** Met à jour l'affichage */
   update() {
     if (!this._running) return
     if (this.displayElement) {

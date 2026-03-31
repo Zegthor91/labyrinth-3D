@@ -9,15 +9,16 @@ import * as THREE from 'three'
  *  'S'  = départ du joueur
  *  'E'  = sortie
  */
+
 export class Labyrinth {
-  static CELL_SIZE    = 4
-  static WALL_HEIGHT  = 3
+  static CELL_SIZE = 4
+  static WALL_HEIGHT = 3
 
   /**
    * @param {THREE.Scene} scene
    * @param {THREE.Material} wallMaterial
    * @param {THREE.Material} floorMaterial
-   * @param {Array}  mapData  - grille 2D définissant le labyrinthe
+   * @param {Array}  mapData  - grille en 2D définissant le labyrinthe
    */
   constructor(scene, wallMaterial, floorMaterial, mapData) {
     this.scene         = scene
@@ -25,18 +26,18 @@ export class Labyrinth {
     this.floorMaterial = floorMaterial
     this.map           = mapData
 
-    this.wallBoxes     = []          // Box3 pour les collisions
+    this.wallBoxes = [] // Box3 pour les collisions
     this.startPosition = new THREE.Vector3()
     this.exitPosition  = new THREE.Vector3()
-    this._meshes       = []          // tous les meshes créés, pour dispose()
+    this._meshes = [] // pour chaques meshes créés
 
     this._build()
   }
 
-  // ─── Conversion grille → monde ───────────────────────────────────────────
+  // Conversion grille 2D en rendu grille 3D
 
   _gridToWorld(col, row) {
-    const C    = Labyrinth.CELL_SIZE
+    const C = Labyrinth.CELL_SIZE
     const cols = this.map[0].length
     const rows = this.map.length
     return new THREE.Vector3(
@@ -46,14 +47,13 @@ export class Labyrinth {
     )
   }
 
-  // ─── Construction ────────────────────────────────────────────────────────
-
+  // Construction
   _build() {
     const map  = this.map
     const rows = map.length
     const cols = map[0].length
-    const C    = Labyrinth.CELL_SIZE
-    const H    = Labyrinth.WALL_HEIGHT
+    const C = Labyrinth.CELL_SIZE
+    const H = Labyrinth.WALL_HEIGHT
 
     // Sol
     if (this.floorMaterial.map) {
@@ -130,7 +130,7 @@ export class Labyrinth {
     this.exitPosition.copy(pos)
   }
 
-  // ─── Collision ───────────────────────────────────────────────────────────
+  // Collision
 
   checkCollision(position, radius) {
     const playerBox = new THREE.Box3(
@@ -143,7 +143,7 @@ export class Labyrinth {
     return false
   }
 
-  // ─── Détection sortie ────────────────────────────────────────────────────
+  // Détection sortie
 
   isAtExit(position) {
     const C  = Labyrinth.CELL_SIZE
@@ -152,14 +152,14 @@ export class Labyrinth {
     return dx < C * 0.6 && dz < C * 0.6
   }
 
-  // ─── Nettoyage scène ─────────────────────────────────────────────────────
+  // Nettoyage de la scène
 
   dispose() {
     for (const mesh of this._meshes) {
       this.scene.remove(mesh)
       mesh.geometry.dispose()
     }
-    this._meshes   = []
+    this._meshes = []
     this.wallBoxes = []
   }
 }
