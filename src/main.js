@@ -1,25 +1,30 @@
 import * as THREE from 'three'
-import { scene, camera, renderer, wallMaterial, floorMaterial } from './scene.js'
-import { Labyrinth } from './game/Labyrinth.js'
-import { Player } from './game/Player.js'
-import { Timer } from './game/Timer.js'
-import { LEVELS } from './game/maps.js'
-import { ui, getSelectedLevel, showGame, showPause, hidePause, showEnd, showStart } from './ui.js'
+import { scene, camera }        from './core/scene.js'
+import { renderer }             from './core/renderer.js'
+import { composer }             from './core/postprocessing.js'
+import './core/lights.js'
+import './core/events.js'
+import { wallMaterial, floorMaterial } from './assets/materials.js'
+import { Labyrinthe }           from './game/labyrinth/index.js'
+import { Player }               from './game/player/index.js'
+import { Timer }                from './game/Timer.js'
+import { LEVELS }               from './game/maps.js'
+import { ui, getSelectedLevel, showGame, showPause, hidePause, showEnd, showStart } from './ui/index.js'
 
-// ── Initialisation
-let labyrinth = new Labyrinth(scene, wallMaterial, floorMaterial, LEVELS.normal.map)
-const player = new Player(camera, renderer.domElement, labyrinth)
-const timer = new Timer(document.getElementById('timer'))
+// Initialisation
+let labyrinth = new Labyrinthe(scene, wallMaterial, floorMaterial, LEVELS.normal.map)
+const player  = new Player(camera, renderer.domElement, labyrinth)
+const timer   = new Timer(document.getElementById('timer'))
 
-// ── État du jeu
+// État du jeu
 let state = 'start'
 
 // Logique de jeu
 function startGame() {
-  labyrinth.dispose()
-  labyrinth = new Labyrinth(scene, wallMaterial, floorMaterial, LEVELS[getSelectedLevel()].map)
+  labyrinth.viderScene()
+  labyrinth = new Labyrinthe(scene, wallMaterial, floorMaterial, LEVELS[getSelectedLevel()].map)
   player.labyrinth = labyrinth
-  player.reset(labyrinth.startPosition)
+  player.reset(labyrinth.posDepart)
 
   timer.reset()
   timer.start()
@@ -85,10 +90,11 @@ function animate() {
   if (state === 'playing') {
     player.update(delta)
     timer.update()
-    if (labyrinth.isAtExit(camera.position)) endGame()
+    labyrinth.update(clock.elapsedTime)
+    if (labyrinth.estArriveSortie(camera.position)) endGame()
   }
 
-  renderer.render(scene, camera)
+  composer.render()
 }
 
 animate()
