@@ -102,9 +102,35 @@ canvas { display: block; }
   pointer-events: none;
 }
 
+/* ─── ANIMATIONS FOND MENU ─── */
+@keyframes bg-scroll-diagonal {
+  from { background-position: 0 0; }
+  to   { background-position: 48px 48px; }
+}
+
+@keyframes grid-flicker {
+  0%   { opacity: 0.5; }
+  25%  { opacity: 1;   }
+  50%  { opacity: 0.3; }
+  75%  { opacity: 0.9; }
+  100% { opacity: 0.5; }
+}
+
 /* ─── ÉCRAN DÉMARRAGE ─── */
 #start-screen {
   gap: 0;
+  background-color: #060a0e;
+}
+
+#start-screen::before {
+  background-color: transparent;
+  background-image:
+    linear-gradient(rgba(0, 255, 231, 0.18) 1.5px, transparent 1.5px),
+    linear-gradient(90deg, rgba(0, 255, 231, 0.18) 1.5px, transparent 1.5px);
+  background-size: 48px 48px;
+  animation:
+    bg-scroll-diagonal 3s linear infinite,
+    grid-flicker       3s ease-in-out infinite;
 }
 
 .tag {

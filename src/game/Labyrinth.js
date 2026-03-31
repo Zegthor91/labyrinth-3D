@@ -56,6 +56,10 @@ export class Labyrinth {
     const H    = Labyrinth.WALL_HEIGHT
 
     // Sol
+    if (this.floorMaterial.map) {
+      this.floorMaterial.map.repeat.set(cols, rows)
+      this.floorMaterial.map.needsUpdate = true
+    }
     const floor = new THREE.Mesh(
       new THREE.PlaneGeometry(cols * C, rows * C),
       this.floorMaterial
