@@ -77,6 +77,7 @@ Ensuite ouvrir le navigateur à l'adresse indiquée dans le terminal (générale
 |---|---|
 | `Z` `Q` `S` `D` | Se déplacer |
 | Souris | Regarder autour |
+| `V` | Basculer vue FPS / vue du dessus |
 | `ESC` ou `Espace` | Pause |
 
 ---

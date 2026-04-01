@@ -52,16 +52,18 @@ function endGame() {
   showEnd(Timer.format(timer.stop()))
 }
 
-// Déclenchement de la pause, avec touche espace
+// Déclenchement de la pause — ignoré si c'est un changement de vue
 player.controls.addEventListener('unlock', () => {
-  if (state === 'playing') pauseGame()
+  if (state === 'playing' && !player.topDown) pauseGame()
 })
 
 window.addEventListener('keydown', (e) => {
-  if (e.code !== 'Space') return
-  e.preventDefault()
-  if (state === 'playing') player.unlock() // déclenche l'event 'unlock' → pauseGame()
-  else if (state === 'paused') resumeGame()
+  if (e.code === 'Space') {
+    e.preventDefault()
+    if (state === 'playing') player.unlock()
+    else if (state === 'paused') resumeGame()
+  }
+  if (e.code === 'KeyV' && state === 'playing') player.toggleView()
 })
 
 // Écouteurs UI
